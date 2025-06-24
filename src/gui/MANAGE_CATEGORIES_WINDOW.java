@@ -21,7 +21,6 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
         setLocationRelativeTo(null);
         setLayout(null);
 
-        // Set background color
         getContentPane().setBackground(new Color(200, 230, 255));
 
         initComponents();
@@ -53,18 +52,24 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
         add(typeComboBox);
 
         typeComboBox.addActionListener(e -> loadCategories((String) typeComboBox.getSelectedItem()));
-
         JButton addButton = new JButton("Add");
         addButton.setBounds(150, 100, 100, 30);
-        addButton.setBackground(new Color(46, 204, 113));
-        addButton.setForeground(Color.GREEN);
+        addButton.setBackground(new Color(46, 204, 113)); // Green
+        addButton.setForeground(Color.WHITE);
+        addButton.setFocusPainted(false);
+        addButton.setBorderPainted(false);
+        addButton.setOpaque(true);
         add(addButton);
 
         JButton deleteButton = new JButton("Delete Selected");
         deleteButton.setBounds(270, 100, 150, 30);
-        deleteButton.setBackground(new Color(231, 76, 60));
-        deleteButton.setForeground(Color.RED);
+        deleteButton.setBackground(new Color(231, 76, 60)); // Red
+        deleteButton.setForeground(Color.WHITE);
+        deleteButton.setFocusPainted(false);
+        deleteButton.setBorderPainted(false);
+        deleteButton.setOpaque(true);
         add(deleteButton);
+
 
         tableModel = new DefaultTableModel(new String[]{"Name", "Type"}, 0);
         categoryTable = new JTable(tableModel);
@@ -99,11 +104,23 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
             return;
         }
 
-
         String name = rawName.toUpperCase();
         String type = (String) typeComboBox.getSelectedItem();
 
         try (Connection conn = database.getConnection()) {
+            // First, check if the category already exists
+            String checkSql = "SELECT COUNT(*) FROM categories WHERE UPPER(name) = ? AND type = ?";
+            PreparedStatement checkPs = conn.prepareStatement(checkSql);
+            checkPs.setString(1, name);
+            checkPs.setString(2, type);
+            ResultSet rs = checkPs.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, "This category already exists.");
+                return;
+            }
+
+            // Proceed to insert
             String sql = "INSERT INTO categories (name, type) VALUES (?, ?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, name);
@@ -111,14 +128,16 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
             int rows = ps.executeUpdate();
 
             if (rows > 0) {
-                try {
-                    String inventorySql = "INSERT INTO inventory (product_name, quantity) VALUES (?, 0)";
-                    PreparedStatement invPs = conn.prepareStatement(inventorySql);
-                    invPs.setString(1, name);
-                    invPs.executeUpdate();
-                } catch (SQLException invEx) {
-                    if (invEx.getErrorCode() != 1062) {
-                        JOptionPane.showMessageDialog(this, "Error syncing to inventory: " + invEx.getMessage());
+                if ("Income".equalsIgnoreCase(type)) {
+                    try {
+                        String inventorySql = "INSERT INTO inventory (product_name, quantity) VALUES (?, 0)";
+                        PreparedStatement invPs = conn.prepareStatement(inventorySql);
+                        invPs.setString(1, name);
+                        invPs.executeUpdate();
+                    } catch (SQLException invEx) {
+                        if (invEx.getErrorCode() != 1062) { // Ignore duplicate
+                            JOptionPane.showMessageDialog(this, "Error syncing to inventory: " + invEx.getMessage());
+                        }
                     }
                 }
 
@@ -128,6 +147,7 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to add category.");
             }
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
@@ -154,6 +174,13 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
             int rows = ps.executeUpdate();
 
             if (rows > 0) {
+                if ("Income".equalsIgnoreCase(type)) {
+                    String invSql = "DELETE FROM inventory WHERE UPPER(product_name) = ?";
+                    PreparedStatement invPs = conn.prepareStatement(invSql);
+                    invPs.setString(1, name.toUpperCase());
+                    invPs.executeUpdate();
+                }
+
                 JOptionPane.showMessageDialog(this, "Category deleted.");
                 loadCategories((String) typeComboBox.getSelectedItem());
             } else {
@@ -163,4 +190,14 @@ public class MANAGE_CATEGORIES_WINDOW extends JFrame {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SwingUtilities.invokeLater(MANAGE_CATEGORIES_WINDOW::new);
+    }
+
 }

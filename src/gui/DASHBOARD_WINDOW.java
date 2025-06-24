@@ -71,21 +71,34 @@ public class DASHBOARD_WINDOW extends JFrame {
         topPanel.add(incomeLabel);
         topPanel.add(expenseLabel);
 
-        JButton expenseProductBtn = new JButton("Expense by Product");
-        expenseProductBtn.addActionListener(e -> showExpenseByProductChart());
-        JButton overviewChartBtn = new JButton("Overview Chart");
+//        JButton expenseProductBtn = new JButton("Expense by Product");
+//        expenseProductBtn.addActionListener(e -> showExpenseByProductChart());
+//        JButton overviewChartBtn = new JButton("Overview Chart");
+//        topPanel.add(overviewChartBtn);
+//        topPanel.add(expenseProductBtn);
+//
+//
+//
+//        JButton productIncomeBtn = new JButton("Income by Product");
+//
+//        overviewChartBtn.addActionListener(e -> calculateAndDisplay());
+//        productIncomeBtn.addActionListener(e -> showIncomeByProductChart());
+//
+//
+//        topPanel.add(productIncomeBtn);
+        JButton overviewChartBtn = createStyledButton("Overview Chart", new Color(52, 152, 219)); // Blue
+        overviewChartBtn.addActionListener(e -> calculateAndDisplay());
         topPanel.add(overviewChartBtn);
+
+        JButton expenseProductBtn = createStyledButton("Expense by Product", new Color(231, 76, 60)); // Red
+        expenseProductBtn.addActionListener(e -> showExpenseByProductChart());
         topPanel.add(expenseProductBtn);
 
-
-
-        JButton productIncomeBtn = new JButton("Income by Product");
-
-        overviewChartBtn.addActionListener(e -> calculateAndDisplay());
+        JButton productIncomeBtn = createStyledButton("Income by Product", new Color(46, 204, 113)); // Green
         productIncomeBtn.addActionListener(e -> showIncomeByProductChart());
-
-
         topPanel.add(productIncomeBtn);
+
+
 
         add(topPanel, BorderLayout.NORTH);
 
@@ -151,6 +164,16 @@ public class DASHBOARD_WINDOW extends JFrame {
         JLabel label = new JLabel(text);
         label.setForeground(color);
         return label;
+    }
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setBackground(bgColor);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return button;
     }
 
     private void styleTable(JTable table) {
@@ -412,6 +435,12 @@ public class DASHBOARD_WINDOW extends JFrame {
     }
 
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         SwingUtilities.invokeLater(DASHBOARD_WINDOW::new);
     }
+
 }

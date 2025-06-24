@@ -32,9 +32,9 @@ public class INVENTORY_WINDOW extends JFrame {
         JPanel inputPanel = new JPanel(new FlowLayout());
         inputPanel.setBackground(new Color(245, 255, 250));
 
-        JButton btnChangeQty = new JButton("Change Product Quantity");
-        styleButton(btnChangeQty, new Color(52, 152, 219));
+        JButton btnChangeQty = createStyledButton("Change Product Quantity", new Color(52, 152, 219)); // Blue
         inputPanel.add(btnChangeQty);
+
 
         topPanel.add(inputPanel);
         add(topPanel, BorderLayout.NORTH);
@@ -60,6 +60,17 @@ public class INVENTORY_WINDOW extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Arial", Font.BOLD, 13));
     }
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setBackground(bgColor);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return button;
+    }
+
 
     private void changeProductQuantity() {
         String nameInput = JOptionPane.showInputDialog(this, "Enter Product Name:");
